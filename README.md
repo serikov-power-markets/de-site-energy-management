@@ -111,6 +111,64 @@ rewards reserving energy for the few largest peaks, a monthly charge rewards the
 
 ![A week of forecasts and dispatch](figures/week_forecast_and_dispatch.png)
 
+## v0.2: safe learning of the peak floor from few experiments
+
+The peak floor helped under the annual charge. Can it be tuned safely and quickly, month by month, when each
+experiment is a month of operation and a bad floor costs money? `src/siteems/sweep.py` runs the MPC (ML forecast with
+weather, monthly demand charge) for 18 floors from 120 to 200 kW and stores the bill of each month
+(`results/floor_by_month.csv`, 12 months x 18 floors; "no floor" is the plain MPC and is placed at 115 kW in the model
+input). `src/siteems/safeopt.py` then plays the year as a sequence of months: in each month a learner may run
+`budget` experiments (one floor evaluated on that month, with 10 EUR of noise added to the observed saving) and is
+scored on the experiments it ran: regret against the best floor of that month, and unsafe experiments, those that
+end more than 50 EUR below the plain MPC. Methods: grid search; GP-UCB on the floor without safety; SafeOpt (Gaussian
+process with a Matern 5/2 kernel, lower confidence bound, beta 2) on the floor with all months pooled, with a
+3-month window and with a space-time kernel (Matern in the floor times a squared exponential in the month). The
+kernel scale (60 kW, 2 months) and the prior amplitude (100 EUR) are fixed in advance, not fitted; sensitivity below.
+The Gaussian process is written out in NumPy (about 20 lines).
+
+| Per year, budget 2 experiments a month, mean of 20 noise seeds | Regret (EUR) | Unsafe experiments (of 24) | Worse than plain MPC |
+|---|---|---|---|
+| Plain MPC, no experiments (reference) | 802 x 2 | 0 | 0 |
+| Grid search (random order) | 3,785 | 13.1 | 16.7 |
+| GP-UCB, no safety | 1,614 | 2.5 | 5.8 |
+| SafeOpt, pooled over months | 1,675 | 3.3 | 7.6 |
+| SafeOpt, 3-month window | 2,123 | 6.5 | 10.9 |
+| SafeOpt, space-time kernel | 2,004 | 4.2 | 6.8 |
+
+(The reference row is the regret of never experimenting: the best floor of every month would save 802 EUR a year in
+total, so staying at the plain MPC has a regret of 802 EUR per budgeted experiment round.)
+
+**Findings**
+
+- **On this plant there is almost nothing to learn.** With monthly peaks the best floor of each month would save 802
+  EUR a year in total (0.7% of the bill), the best single floor in hindsight 432 EUR (120 kW), and 148 of the 204
+  month-and-floor cells are worse than the plain MPC. The floor of 167 kW that was the best strategy under the
+  annual charge loses 1,302 EUR a year here (165 kW). The best floor changes from month to month (115 to 170 kW)
+  without a pattern a kernel in time can use.
+- **No learner beats not experimenting.** The regret of the best method (SafeOpt pooled, 861 EUR with one experiment
+  a month) is above that of the plain MPC (802); all learners pay for exploration that finds little. More experiments
+  mean more regret, as every experiment is paid for on the plant.
+- **Safety helps against search, not against the plant.** Grid search runs 13 unsafe experiments a year (budget 2),
+  SafeOpt and GP-UCB 3 to 4. GP-UCB, which has no safe set, is not worse here (see the noise sensitivity). The count is measured, not guaranteed: beta is constant and the
+  noise is not what the Gaussian process assumes.
+- **The space-time kernel did not help.** It is worse than the pooled version in this table (2,004 against 1,675 EUR
+  at budget 2); a test on a constructed plant with a drifting narrow optimum (`tests/test_safeopt.py`) shows the
+  kernel doing what it should when the optimum moves smoothly, so the real plant simply has no smooth drift.
+- **Sensitivity** (`results/safeopt_tol_sigma.csv`, `safeopt_sensitivity.csv`, `safeopt_noise.csv`): with a tolerated
+  loss of 25 EUR and a prior amplitude of 200 EUR or more SafeOpt never leaves the plain MPC (0 unsafe, regret 1,603);
+  with a smaller amplitude it explores and runs 4 to 7 unsafe experiments. A larger length scale in the floor (90 kW)
+  gives more unsafe experiments than a smaller one (30 kW). Unsafe experiments of pooled SafeOpt against GP-UCB at noise 0, 10, 25 and 50 EUR:
+  4.0 against 5.0, 3.3 against 2.5, 2.3 against 1.4 and 1.3 against 1.3. SafeOpt's safe set therefore shows no consistent
+  advantage over GP-UCB on this plant; at 50 EUR the space-time and window variants stay at the plain MPC (0 unsafe).
+  Grid search is worst at every noise level.
+
+![Savings by floor and month, regret against unsafe experiments](figures/safeopt_overview.png)
+
+What this is not: a SafeOpt with guarantees, a result for a building, or a hardware test. One parameter, one site, one
+year, a plant defined by simulation (the saving of a floor is measured against the plain MPC run by the same
+simulation, which a real site would have to estimate), and the learners read from a precomputed table instead of
+controlling the plant. The table takes about 45 minutes on 8 cores.
+
 ## Limits
 
 One site, one year, hourly resolution (a real demand charge is billed on 15-minute averages, which makes peaks
@@ -136,5 +194,7 @@ python -m venv .venv
 .venv/Scripts/pip install -e ".[test]"
 .venv/Scripts/python scripts/download.py
 .venv/Scripts/python -m siteems.run     # forecasts (about 7 minutes, cached in results/) and 19 one-year simulations
+.venv/Scripts/python -m siteems.sweep     # v0.2: floor by month table (about 45 minutes on 8 cores)
+.venv/Scripts/python -m siteems.study     # v0.2: learners on the table (a few minutes)
 .venv/Scripts/python -m pytest -q
 ```
