@@ -1,0 +1,43 @@
+{
+ "site": "B_new_roof",
+ "strategy": "feed-in case: plan ignores the limit",
+ "seed": 0,
+ "settings": {
+  "name": "feed-in case: plan ignores the limit",
+  "kind": "mpc",
+  "forecast": "ml",
+  "scenarios": 1,
+  "risk_weight": 0.0,
+  "floor": false,
+  "estimator": "truth",
+  "margin_sigma": 0.0,
+  "faults": false,
+  "rule_aware": false,
+  "atypical": false
+ },
+ "modes": {
+  "normal": 8760
+ },
+ "total_eur": 32838.132452645936,
+ "network_eur": 26457.771412728798,
+ "capacity_eur": 2533.8220337991843,
+ "energy_eur": 6706.362408534113,
+ "export_eur": 660.248063631722,
+ "wear_eur": 334.2466950147491,
+ "peak_kw": 126.69110168995923,
+ "utilisation_h": 1510.6948513228176,
+ "tier": "<2500 h",
+ "cycles": 139.26945625614547,
+ "stored_change_kwh": 1.4210854715202004e-13,
+ "curtail_mwh": 0.05687343056233693,
+ "soc_violation_hours": 0,
+ "grid_violation_hours": 0,
+ "avoidable_grid_violation_hours": 0,
+ "feed_in_violation_hours": 0,
+ "soc_rmse": 0.0,
+ "atypical_eligible": false,
+ "atypical_shift_kw": 62.59992037258766,
+ "atypical_saving_eur": 0.0,
+ "high_tier_planned": true,
+ "threshold_kw": 32.0
+}

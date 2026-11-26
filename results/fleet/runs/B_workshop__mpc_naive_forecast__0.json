@@ -1,0 +1,43 @@
+{
+ "site": "B_workshop",
+ "strategy": "MPC naive forecast",
+ "seed": 0,
+ "settings": {
+  "name": "MPC naive forecast",
+  "kind": "mpc",
+  "forecast": "naive",
+  "scenarios": 1,
+  "risk_weight": 0.0,
+  "floor": false,
+  "estimator": "truth",
+  "margin_sigma": 0.0,
+  "faults": false,
+  "rule_aware": true,
+  "atypical": false
+ },
+ "modes": {
+  "normal": 8760
+ },
+ "total_eur": 41255.649271917224,
+ "network_eur": 32759.519271322413,
+ "capacity_eur": 2401.9974645386583,
+ "energy_eur": 8400.870068016531,
+ "export_eur": 31.175892733003447,
+ "wear_eur": 126.43582531127966,
+ "peak_kw": 120.09987322693291,
+ "utilisation_h": 2022.1517969080387,
+ "tier": "<2500 h",
+ "cycles": 52.68159387969986,
+ "stored_change_kwh": 0.0,
+ "curtail_mwh": 0.0,
+ "soc_violation_hours": 0,
+ "grid_violation_hours": 0,
+ "avoidable_grid_violation_hours": 0,
+ "feed_in_violation_hours": 0,
+ "soc_rmse": 0.0,
+ "atypical_eligible": false,
+ "atypical_shift_kw": 45.4077794589015,
+ "atypical_saving_eur": 0.0,
+ "high_tier_planned": true,
+ "threshold_kw": 32.61651945939883
+}

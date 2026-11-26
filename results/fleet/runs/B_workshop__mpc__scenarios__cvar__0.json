@@ -1,0 +1,43 @@
+{
+ "site": "B_workshop",
+ "strategy": "MPC, scenarios, CVaR",
+ "seed": 0,
+ "settings": {
+  "name": "MPC, scenarios, CVaR",
+  "kind": "mpc",
+  "forecast": "ml",
+  "scenarios": 6,
+  "risk_weight": 0.5,
+  "floor": false,
+  "estimator": "truth",
+  "margin_sigma": 0.0,
+  "faults": false,
+  "rule_aware": true,
+  "atypical": false
+ },
+ "modes": {
+  "normal": 8760
+ },
+ "total_eur": 41461.29327830308,
+ "network_eur": 32907.83670644596,
+ "capacity_eur": 2549.16082173704,
+ "energy_eur": 8403.550141148904,
+ "export_eur": 24.295506409869933,
+ "wear_eur": 174.2019371180855,
+ "peak_kw": 127.45804108685199,
+ "utilisation_h": 1905.4851699170254,
+ "tier": "<2500 h",
+ "cycles": 72.58414046586896,
+ "stored_change_kwh": 0.0,
+ "curtail_mwh": 0.0,
+ "soc_violation_hours": 0,
+ "grid_violation_hours": 0,
+ "avoidable_grid_violation_hours": 0,
+ "feed_in_violation_hours": 0,
+ "soc_rmse": 0.0,
+ "atypical_eligible": false,
+ "atypical_shift_kw": 52.76594731882058,
+ "atypical_saving_eur": 0.0,
+ "high_tier_planned": true,
+ "threshold_kw": 32.61651945939883
+}

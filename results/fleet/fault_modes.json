@@ -1,0 +1,59 @@
+{
+ "A_factory__floor__kalman__margin__faults__0": {
+  "normal": 8647,
+  "no_plan": 44,
+  "hold_plan": 42,
+  "stop": 27
+ },
+ "A_factory__floor__kalman__margin__faults__1": {
+  "normal": 8620,
+  "hold_plan": 89,
+  "no_plan": 34,
+  "stop": 16,
+  "no_meter": 1
+ },
+ "A_factory__floor__kalman__margin__faults__2": {
+  "normal": 8588,
+  "no_plan": 98,
+  "hold_plan": 63,
+  "stop": 11
+ },
+ "B_workshop__floor__kalman__margin__faults__0": {
+  "normal": 8647,
+  "no_plan": 44,
+  "hold_plan": 42,
+  "stop": 27
+ },
+ "B_workshop__floor__kalman__margin__faults__1": {
+  "normal": 8620,
+  "hold_plan": 89,
+  "no_plan": 34,
+  "stop": 16,
+  "no_meter": 1
+ },
+ "B_workshop__floor__kalman__margin__faults__2": {
+  "normal": 8588,
+  "no_plan": 98,
+  "hold_plan": 63,
+  "stop": 11
+ },
+ "C_large_synthetic__floor__kalman__margin__faults__0": {
+  "normal": 8647,
+  "no_plan": 44,
+  "hold_plan": 42,
+  "stop": 27
+ },
+ "C_large_synthetic__floor__kalman__margin__faults__1": {
+  "normal": 8620,
+  "hold_plan": 89,
+  "no_plan": 34,
+  "stop": 16,
+  "no_meter": 1
+ },
+ "C_large_synthetic__floor__kalman__margin__faults__2": {
+  "normal": 8588,
+  "no_plan": 98,
+  "hold_plan": 63,
+  "stop": 11
+ }
+}

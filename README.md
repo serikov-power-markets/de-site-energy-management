@@ -6,7 +6,7 @@ predictive control (MPC) of a battery, the cooling plant used as thermal storage
 prices and a German-style demand charge on the peak import.
 
 Research study on public data. The site's load, cooling and PV profiles are metered; the battery, the PV size and
-the tariff are assumptions stated below.
+the tariff are assumptions stated below. Version 0.3 extends the study to a [fleet of sites](#v03-a-fleet-of-batteries-tariff-rules-on-site-control-and-lost-value) with German network-charge rules, an on-site controller with fallbacks, state of charge estimation and an account of the value lost between a perfect plan and the bill.
 
 ## Setup
 
@@ -169,6 +169,94 @@ year, a plant defined by simulation (the saving of a floor is measured against t
 simulation, which a real site would have to estimate), and the learners read from a precomputed table instead of
 controlling the plant. The table takes about 45 minutes on 8 cores.
 
+## v0.3: a fleet of batteries, tariff rules, on-site control and lost value
+
+An optimiser plans each hour, an on-site controller carries the plan out, a Kalman filter estimates the state of
+charge, and the bill follows German network-charge rules. Test year June 2016 to May 2017.
+
+**Sites.** A: the factory above (83 kW mean, 200 kW net peak, 150 kWp PV, battery 200 kWh / 100 kW). B: a second
+metered site of the same data set (`industrial1`, 33 kW mean, 127 kW peak, 40 kWp PV, 80 kWh / 40 kW). C: site A
+times six, a **synthetic** large site, used because the rule for atypical grid use needs a shift of at least 100 kW.
+PV and batteries are assumptions. A third industrial meter of the data set draws about 1.5 kW and is left out.
+
+**Parts** (`src/siteems/fleet/`)
+
+| Part | What |
+|---|---|
+| `tariffs.py` | Capacity-price system with two tiers split at 2,500 hours of utilisation; atypical grid use (section 19(2) sentence 1 StromNEV, BNetzA BK4-13-739): relative shift (20% at medium voltage), at least 100 kW and 500 EUR; high-load windows on working days (hours published by one operator for 2026, used as an example). Prices are illustrative |
+| `planner.py` | Linear programme (HiGHS), deterministic or over scenarios of the net load built from past forecast errors, first-hour decision shared by all scenarios, optional CVaR of the peak, grid and feed-in limits |
+| `controller.py` | Modes: normal (plan plus peak guard), hold (meter lost), threshold rule (no plan), idle (no plan and no meter), stop (battery management fault). One safety filter enforces power, state of charge (with a margin of two standard deviations), grid and feed-in limits in every mode |
+| `estimator.py` | Equivalent circuit of a cell; extended Kalman filter on state of charge, RC voltage and current offset against coulomb counting (recalibrated at full charge) |
+| `sim.py`, `run.py`, `report.py` | Closed loop with one-minute battery samples, random outages of optimiser, forecast service, meter and battery management, every run stored |
+
+**Saving against no battery, EUR per year** (capacity-price tariff; [results/fleet/results.csv](results/fleet/results.csv))
+
+| Strategy | A factory | B workshop | C large (synthetic) |
+|---|---|---|---|
+| Perfect forecast | 8,014 | 699 | 48,081 |
+| Threshold rule from history, keeps the battery full | 6,312 | 361 | 37,835 |
+| MPC, gradient boosting forecast | 2,815 | 363 | 16,884 |
+| MPC, naive forecast | 4,156 | 241 | 24,933 |
+| MPC, scenarios of past errors | 1,658 | 36 | 9,905 |
+| MPC, scenarios, CVaR of the peak | 1,572 | 35 | 9,399 |
+| MPC with a peak floor learnt from history | 2,820 | 378 | 16,914 |
+| Floor, plan ends the horizon full (follow-up) | 4,169 | 451 | 25,017 |
+| Plan for atypical grid use, forecast | 364 (not eligible) | 73 (not eligible) | 48,152 |
+| Plan for atypical grid use, perfect forecast | 14,171 | 153 (not eligible) | 85,023 |
+
+![Savings](figures/fleet_savings.png)
+
+**Where the value is lost** ([results/fleet/value_waterfall.csv](results/fleet/value_waterfall.csv)). The path was chosen
+before the year was run: perfect forecast, MPC with floor, the same with the Kalman filter and margin, the same with
+outages.
+
+| EUR per year | A | B | C |
+|---|---|---|---|
+| Perfect forecast | 8,014 | 699 | 48,081 |
+| Lost to forecast error | -5,194 | -322 | -31,167 |
+| Lost to state estimate and safety margin | +5 | -3 | +28 |
+| Lost to outages (mean of 3 draws) | -34 | -47 | +1,038 |
+| Captured | 2,790 (35%) | 328 (47%) | 17,980 (37%) |
+
+- **The forecast error at the peak is almost the whole loss; state estimation and the safety margin cost nearly
+  nothing.** Outages cost 1% (A) and 13% (B) of the captured saving; on C they add value, because the fallback rule
+  shaves peaks better than the plan it replaces.
+- **A simple rule beats the optimiser on A and C.** Under an annual capacity price one missed peak sets the year's
+  charge. The rule recharges whenever it can; the plan aims for a half-full battery at the end of its horizon and
+  meets large peaks with too little energy. Letting the plan end full (added after seeing this, so not an independent
+  test) raises its saving by about half on A and C and puts it ahead of the rule on B only.
+- **Scenario planning does worse than the single forecast here.** The programme gives each scenario its own later
+  hours, so the shared first decision assumes that the future is known after one hour, and the battery cycles 30 to
+  50% more. This is the likely cause; it was not isolated. With identical scenarios the programme returns the
+  deterministic decision (tested).
+- **Which rule the plan serves matters more than the algorithm.** On the synthetic large site, planning only against
+  the high-load windows makes the site eligible for the individual charge and is worth 48,152 EUR a year, against 37,835
+  for the threshold rule and 25,017 for the best forecast-based peak plan. On site A the same plan reaches the 100 kW
+  minimum only with a perfect forecast (14,171 EUR, almost twice the best perfect peak plan), and with real forecasts
+  falls to 59 kW of shift; site B stays below 100 kW even with a perfect forecast (92 kW). Eligibility is a cliff, so it
+  has to be checked with real forecasts before a customer is promised the individual charge.
+- **Limits held in every mode.** No hour with an import above the connection limit that the battery could have
+  prevented, no feed-in above the limit. Without a margin on the estimated state of charge the true value sat up to
+  0.1 points below its limit in 400 to 490 hours a year; with two standard deviations in none, except 10 hours at
+  0.03 points in one of the three outage runs, where the filter's own uncertainty was too small. A margin is a
+  probabilistic safeguard, not a guarantee.
+- **State of charge.** The Kalman filter's root mean square error is about 0.05 points. Coulomb counting with a constant
+  current offset of 0.4 A drifts by up to about 70 points between full charges (RMSE 24 to 27 points) and loses 4%
+  (A) to 37% (B) of the saving.
+
+![State of charge error](figures/fleet_soc_error.png)
+
+**A new use case before go-live** (a roof of 99 kWp on site B with a feed-in limit of 60% of rated power and no payment
+at negative prices, as for new small systems): the battery lowers curtailment from 0.63 to 0.06 MWh a year and saves
+632 EUR; telling the optimiser about the limit changes the result by less than 1 EUR, because the battery rarely lets
+the surplus reach the limit.
+
+**Limits of v0.3.** Hourly data (network charges are billed on 15-minute averages); the controller acts on the mean
+power of the current hour, which stands for a fast local loop; illustrative prices and batteries, one synthetic site;
+cell parameters and sensor errors are assumed, with a sloped voltage curve (a flat LFP curve would make the voltage far
+less informative); outage probabilities are assumed; ERA5 in place of a weather forecast; one test year. Not connected
+to any real device.
+
 ## Limits
 
 One site, one year, hourly resolution (a real demand charge is billed on 15-minute averages, which makes peaks
@@ -196,5 +284,7 @@ python -m venv .venv
 .venv/Scripts/python -m siteems.run     # forecasts (about 7 minutes, cached in results/) and 19 one-year simulations
 .venv/Scripts/python -m siteems.sweep     # v0.2: floor by month table (about 45 minutes on 8 cores)
 .venv/Scripts/python -m siteems.study     # v0.2: learners on the table (a few minutes)
+.venv/Scripts/python -m siteems.fleet.run 4        # v0.3: all fleet runs (about an hour on 4 cores, resumable)
+.venv/Scripts/python -m siteems.fleet.report       # v0.3: tables and figures
 .venv/Scripts/python -m pytest -q
 ```

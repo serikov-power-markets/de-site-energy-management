@@ -1,0 +1,4 @@
+site,perfect_forecast_saving_eur,lost_to_forecast_error_eur,lost_to_state_estimate_and_margin_eur,lost_to_faults_eur,captured_eur,captured_share,rule_with_estimator_saving_eur,full_reserve_plan_with_estimator_saving_eur
+A_factory,8013.51,5193.86,-4.7079,33.8798,2790.48,0.348222,6312.02,4171.75
+B_workshop,699.152,321.615,2.68134,47.0215,327.835,0.468903,361.81,451.198
+C_large_synthetic,48081.1,31167.1,-28.1061,-1037.89,17979.9,0.37395,37835.6,25033.8

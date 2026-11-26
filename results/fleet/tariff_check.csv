@@ -1,0 +1,4 @@
+site,mean_load_kw,peak_import_kw,utilisation_h,tier,network_charge_eur,window_peak_kw,shift_kw,shift_share,eligible_without_battery
+A_factory,82.7452,200.208,2805.85,>=2500 h,71529,182.922,17.2863,0.0863415,False
+B_workshop,33.4336,127.458,1908.03,<2500 h,32948.4,74.6921,52.7659,0.413987,False
+C_large_synthetic,496.471,1201.25,2805.85,>=2500 h,429174,1097.53,103.718,0.0863415,False

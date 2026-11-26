@@ -1,0 +1,43 @@
+{
+ "site": "B_new_roof",
+ "strategy": "feed-in case: no battery",
+ "seed": 0,
+ "settings": {
+  "name": "feed-in case: no battery",
+  "kind": "none",
+  "forecast": "ml",
+  "scenarios": 1,
+  "risk_weight": 0.0,
+  "floor": false,
+  "estimator": "truth",
+  "margin_sigma": 0.0,
+  "faults": false,
+  "rule_aware": true,
+  "atypical": false
+ },
+ "modes": {
+  "none": 8760
+ },
+ "total_eur": 33469.65085297337,
+ "network_eur": 27166.88509826968,
+ "capacity_eur": 2533.8220337991847,
+ "energy_eur": 7108.674217691949,
+ "export_eur": 805.9084629882587,
+ "wear_eur": 0.0,
+ "peak_kw": 126.69110168995924,
+ "utilisation_h": 1555.472340891184,
+ "tier": "<2500 h",
+ "cycles": 0.0,
+ "stored_change_kwh": 0.0,
+ "curtail_mwh": 0.6285818123157402,
+ "soc_violation_hours": 0,
+ "grid_violation_hours": 0,
+ "avoidable_grid_violation_hours": 0,
+ "feed_in_violation_hours": 0,
+ "soc_rmse": 0.0,
+ "atypical_eligible": false,
+ "atypical_shift_kw": 62.599920372587675,
+ "atypical_saving_eur": 0.0,
+ "high_tier_planned": true,
+ "threshold_kw": 32.0
+}

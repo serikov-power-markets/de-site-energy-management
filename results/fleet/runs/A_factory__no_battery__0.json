@@ -1,0 +1,43 @@
+{
+ "site": "A_factory",
+ "strategy": "no battery",
+ "seed": 0,
+ "settings": {
+  "name": "no battery",
+  "kind": "none",
+  "forecast": "ml",
+  "scenarios": 1,
+  "risk_weight": 0.0,
+  "floor": false,
+  "estimator": "truth",
+  "margin_sigma": 0.0,
+  "faults": false,
+  "rule_aware": true,
+  "atypical": false
+ },
+ "modes": {
+  "none": 8760
+ },
+ "total_eur": 92154.58309070538,
+ "network_eur": 71528.99947076535,
+ "capacity_eur": 26027.03133077161,
+ "energy_eur": 20909.59215507275,
+ "export_eur": 284.0085351327238,
+ "wear_eur": 0.0,
+ "peak_kw": 200.20793331362776,
+ "utilisation_h": 2805.8463208166236,
+ "tier": ">=2500 h",
+ "cycles": 0.0,
+ "stored_change_kwh": 0.0,
+ "curtail_mwh": 0.0,
+ "soc_violation_hours": 0,
+ "grid_violation_hours": 0,
+ "avoidable_grid_violation_hours": 0,
+ "feed_in_violation_hours": 0,
+ "soc_rmse": 0.0,
+ "atypical_eligible": false,
+ "atypical_shift_kw": 17.28625367294768,
+ "atypical_saving_eur": 0.0,
+ "high_tier_planned": true,
+ "threshold_kw": 151.10879626498496
+}
